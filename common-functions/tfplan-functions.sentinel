@@ -1,0 +1,29 @@
+# Common functions that use the tfplan/v2 import
+
+# The filter functions all accept a collection of resource changes, an attribute,
+# a value or a list of values, and a boolean, prtmsg, which can be true or false
+# and indicates whether the filter function should print violation messages.
+# The filter functions return a map consisting of 2 items:
+#   * "resources": a map consisting of resource changes that violate a condition
+#   * "messages":  a map of violation messages associated with the resources
+# Note that both the resources and messages collections are indexed by the
+# address of the resources, so they will have the same order and length.
+# The filter functions all call evaluate_attribute() to evaluate attributes
+# of resources even if nested deep within them.
+
+##### Imports #####
+import "tfplan/v2" as tfplan
+
+##### Functions #####
+
+### find_resources_being_recreated ###
+# Find all resources being recreated but not destroyed or created using the tfplan/v2 import.
+# Technically, this returns a map of resource changes.
+find_resources_being_recreated = func() {
+  resources = filter tfplan.resource_changes as address, rc {
+  	rc.mode is "managed" and
+  	rc.change.actions contains "delete" and rc.change.actions contains "create"
+  }
+
+  return resources
+}
